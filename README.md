@@ -19,12 +19,24 @@ As usual, we'll start by importing the necessary packages that we'll use in this
 !pip install pillow
 ```
 
+    Requirement already satisfied: pillow in c:\users\flatiron_user\.conda\envs\learn-env\lib\site-packages (6.2.0)
+    
+
+    pexpect 4.6.0 requires ptyprocess>=0.5, which is not installed.
+    tensorboard 1.6.0 has requirement bleach==1.5.0, but you'll have bleach 3.1.0 which is incompatible.
+    You are using pip version 10.0.1, however version 19.3.1 is available.
+    You should consider upgrading via the 'python -m pip install --upgrade pip' command.
+    
+
 
 ```python
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 import numpy as np
 import os
 ```
+
+    Using TensorFlow backend.
+    
 
 In this lab, you'll import a bunch of images to correctly classify them as "Santa", meaning that Santa is present on the image or "not Santa" meaning that something else is in the images. 
 
@@ -53,6 +65,10 @@ train_images, train_labels = next(train_generator)
 test_images, test_labels = next(test_generator)
 ```
 
+    Found 132 images belonging to 2 classes.
+    Found 790 images belonging to 2 classes.
+    
+
 ## Inspect and prepare data
 
 ## Look at some images
@@ -62,12 +78,123 @@ Note that we have four numpy arrays now: `train_images`, `train_labels`, `test_i
 
 ```python
 # Preview an image
+train_images[0]
 ```
+
+
+
+
+    array([[[0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            ...,
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.]],
+    
+           [[0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            ...,
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.]],
+    
+           [[0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            ...,
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.]],
+    
+           ...,
+    
+           [[0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            ...,
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.]],
+    
+           [[0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            ...,
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.]],
+    
+           [[0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            ...,
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.]]], dtype=float32)
+
+
 
 
 ```python
-# Preview another image
+train_images[10]
 ```
+
+
+
+
+    array([[[132.,  41.,  66.],
+            [156.,  74.,  74.],
+            [132.,  49.,  57.],
+            ...,
+            [173., 140., 148.],
+            [ 49.,  24.,  33.],
+            [ 66.,  24.,  33.]],
+    
+           [[181.,  82.,  99.],
+            [140.,  49.,  66.],
+            [115.,  49.,  57.],
+            ...,
+            [ 41.,   0.,   8.],
+            [ 57.,  24.,  33.],
+            [ 33.,   0.,   0.]],
+    
+           [[165.,  74.,  82.],
+            [123.,  33.,  57.],
+            [ 99.,  33.,  49.],
+            ...,
+            [ 24.,   0.,   0.],
+            [ 49.,   8.,  16.],
+            [ 82.,  41.,  66.]],
+    
+           ...,
+    
+           [[173., 140., 140.],
+            [181., 156., 148.],
+            [156., 132., 140.],
+            ...,
+            [140.,  82.,  90.],
+            [ 99.,  41.,  66.],
+            [ 57.,   8.,  16.]],
+    
+           [[148., 123., 123.],
+            [132., 107., 107.],
+            [148., 123., 123.],
+            ...,
+            [115.,  74.,  99.],
+            [123.,  82., 107.],
+            [ 99.,  57.,  66.]],
+    
+           [[181., 156., 156.],
+            [222., 198., 189.],
+            [198., 181., 173.],
+            ...,
+            [189., 156., 156.],
+            [156., 132., 123.],
+            [165., 140., 132.]]], dtype=float32)
+
+
 
 ## The shape of data
 
@@ -76,7 +203,15 @@ Now, let's use `np.shape()` to look at what these numpy arrays look like.
 
 ```python
 # Preview the shape of both the images and labels for both the train and test sets (4 objects total)
+np.shape(train_images), np.shape(train_labels), np.shape(test_images), np.shape(test_labels)
 ```
+
+
+
+
+    ((790, 64, 64, 3), (790, 2), (132, 64, 64, 3), (132, 2))
+
+
 
 ##  `train_images` and `test_images`
 
@@ -92,7 +227,7 @@ So, translated to this example, we need to transform our `(790, 64, 64, 3)` matr
 
 ```python
 # Reshape the train images 
-train_img_unrow = None
+train_img_unrow = train_images.reshape(64*64*3, 790)
 ```
 
 Verify that the shape of the the newly created `train_img_unrow` is correct.
@@ -100,22 +235,37 @@ Verify that the shape of the the newly created `train_img_unrow` is correct.
 
 ```python
 # Preview the shape of train_img_unrow
+np.shape(train_img_unrow)
 ```
+
+
+
+
+    (12288, 790)
+
+
 
 Next, let's transform `test_images` in a similar way. Note that the dimensions are different here! Where we needed to have a matrix shape of $n$ x $l$ for `train_images`; for `test_images`, we need to get to a shape of $n$ x $m$. What is $m$ here?
 
 
 ```python
 # Define appropriate m 
-m = None
+m = np.shape(test_images)[0]
 test_img_unrow = test_images.reshape(m, -1).T
 ```
 
 
 ```python
 # Preview the shape of test_img_unrow
-
+np.shape(test_img_unrow)
 ```
+
+
+
+
+    (12288, 132)
+
+
 
 ## `train_labels` and `test_labels`
 
@@ -129,6 +279,19 @@ Let's have a closer look.
 train_labels 
 ```
 
+
+
+
+    array([[0., 1.],
+           [1., 0.],
+           [1., 0.],
+           ...,
+           [1., 0.],
+           [0., 1.],
+           [1., 0.]], dtype=float32)
+
+
+
 Looking at this, it's clear that for each observation (or image), `train_labels` doesn't simply have an output of 1 or 0, but a pair - either `[0, 1]` or `[1, 0]`.
 
 Having this information, we still don't know which pair corresponds with `santa` versus `not_santa`. Luckily, this was stored using `keras.preprocessing_image`, and you can get more info using the command `train_generator.class_indices`.
@@ -139,12 +302,19 @@ Having this information, we still don't know which pair corresponds with `santa`
 train_generator.class_indices 
 ```
 
+
+
+
+    {'not_santa': 0, 'santa': 1}
+
+
+
 Index 0 (the first column) represents `not_santa`, index 1 represents `santa`. Select one of the two columns and transpose the result such that you get $1$ x $l$ and $1$ x $m$ vectors respectively, and value `1` represents `santa`. 
 
 
 ```python
 # Your code here
-train_labels_final = None
+train_labels_final = train_labels.T[[1]]
 ```
 
 
@@ -154,9 +324,16 @@ np.shape(train_labels_final)
 ```
 
 
+
+
+    (1, 790)
+
+
+
+
 ```python
 # Your code here
-test_labels_final = None
+test_labels_final = test_labels.T[[1]]
 ```
 
 
@@ -165,20 +342,43 @@ test_labels_final = None
 np.shape(test_labels_final) 
 ```
 
+
+
+
+    (1, 132)
+
+
+
 As a final sanity check, look at an image and the corresponding label, so we're sure that santa is indeed stored as 1.
 
-- First, use `array_to_image()` again on the original `train_images` with index 240 to look at this particular image 
+- First, use `array_to_img()` again on the original `train_images` with index 240 to look at this particular image 
 - Use `train_labels_final` to get the 240th label 
 
 
 ```python
 # Preview train image at index 240
+array_to_img(train_images[240])
 ```
+
+
+
+
+![png](index_files/index_36_0.png)
+
+
 
 
 ```python
 # Preview train label at index 240
+train_labels_final[0,240]
 ```
+
+
+
+
+    0.0
+
+
 
 This seems to be correct! Feel free to try out other indices as well.
 
@@ -189,11 +389,18 @@ Remember that each RGB pixel in an image takes a value between 0 and 255. In Dee
 
 ```python
 # Your code here 
-train_img_final = None
-test_img_final = None
+train_img_final = train_img_unrow/255
+test_img_final = test_img_unrow/255
 
 type(test_img_unrow)
 ```
+
+
+
+
+    numpy.ndarray
+
+
 
 ## Build a logistic regression-based neural network
 
@@ -233,6 +440,7 @@ $w$ and $b$ are the unknown parameters to start with:
 
 ```python
 # Your code here
+b = 0
 ```
 
 ## Initialize $w$
@@ -242,11 +450,14 @@ Define a function `init_w()`, with a parameter `n`. The function should return a
 
 ```python
 # Define your function
+def init_w(n):
+    return np.zeros((n,1))
 ```
 
 
 ```python
 # Call your function using appropriate parameters
+w = init_w(64*64*3)
 ```
 
 ## Forward propagation
@@ -267,12 +478,19 @@ $$ \frac{dJ(w,b)}{db} = \displaystyle\frac{1}{l}\displaystyle\sum^l_{i=1} \frac{
 
 ```python
 # Define the propagation function
+def propagation(w, b, x, y):
+    l = x.shape[1]
+    y_hat = 1/(1 + np.exp(- (np.dot(w.T, x) + b))) 
+    cost = -(1/l) * np.sum(y * np.log(y_hat) + (1-y)* np.log(1 - y_hat))    
+    dw = (1/l) * np.dot(x,(y_hat - y).T)
+    db = (1/l) * np.sum(y_hat - y)
+    return dw, db, cost
 ```
 
 
 ```python
 # Use the propogation function
-dw, db, cost = None
+dw, db, cost = propagation(w,b,train_img_final, train_labels_final)
 ```
 
 
@@ -283,6 +501,17 @@ print(db)
 
 print(cost)
 ```
+
+    [[-0.0082204 ]
+     [-0.00204765]
+     [-0.00152643]
+     ...
+     [-0.00649789]
+     [-0.01073964]
+     [-0.01097046]]
+    -0.01139240506329114
+    0.6931471805599452
+    
 
 ## Optimization
 
@@ -302,9 +531,9 @@ def optimization(w, b, x, y, num_iterations, learning_rate, print_cost = False):
     costs = []
     
     for i in range(num_iterations):
-        dw, db, cost = None
-        w = None
-        b = None
+        dw, db, cost = propagation(w,b,x,y)
+        w = w- learning_rate* dw
+        b = b- learning_rate* db
         
         # Record the costs and print them every 50 iterations
         if i % 50 == 0:
@@ -322,6 +551,12 @@ w, b, costs = optimization(w, b, train_img_final, train_labels_final,
                            num_iterations= 151, learning_rate = 0.0001, print_cost = True)
 ```
 
+    Cost after iteration 0: 0.693147
+    Cost after iteration 50: 0.692063
+    Cost after iteration 100: 0.691268
+    Cost after iteration 150: 0.690499
+    
+
 ## Make label predictions: Santa or not?
 
 Next, let's create a function that makes label predictions. We'll later use this when we will look at our Santa pictures. What we want is a label that is equal to 1 when the predicted $y$ is bigger than 0.5, and 0 otherwise. 
@@ -330,13 +565,16 @@ Next, let's create a function that makes label predictions. We'll later use this
 ```python
 def prediction(w, b, x):
     l = x.shape[1]
-    y_prediction = None
+    y_prediction = np.zeros((1, l))
     w = w.reshape(x.shape[0], 1)
-    y_hat = None
+    y_hat = 1/(1 + np.exp(- (np.dot(w.T, x) + b))) 
     p = y_hat
     
     for i in range(y_hat.shape[1]):
-        # Transform the probability into a binary classification using 0.5 as the cutoff
+        if (y_hat[0,i] > .5):
+            y_prediction[0,i] = 1
+        else:
+            y_prediction[0,i] =0
     return y_prediction
 ```
 
@@ -353,6 +591,13 @@ x = np.array([[0.2, 0.4, -1.2, -2],
 
 prediction(w, b, x)
 ```
+
+
+
+
+    array([[1., 1., 0., 0.]])
+
+
 
 ## The overall model
 
@@ -389,11 +634,69 @@ def model(x_train, y_train, x_test, y_test, num_iterations = 2000, learning_rate
 
 
 ```python
+import time
+```
+
+
+```python
 # Run the model!
 # ⏰ Expect your code to take several minutes to run
-output = model(train_img_final, train_labels_final, test_img_final, 
+start = time.time()
+output = model(train_img_final, train_labels_final, test_img_final, test_labels_final,
                num_iterations=2000, learning_rate=0.005, print_cost=True)
+time.time()-start
 ```
+
+    Cost after iteration 0: 0.693147
+    Cost after iteration 50: 1.766817
+    Cost after iteration 100: 1.758028
+    Cost after iteration 150: 1.747847
+    Cost after iteration 200: 1.732584
+    Cost after iteration 250: 1.713767
+    Cost after iteration 300: 1.693104
+    Cost after iteration 350: 1.671352
+    Cost after iteration 400: 1.648756
+    Cost after iteration 450: 1.625408
+    Cost after iteration 500: 1.601342
+    Cost after iteration 550: 1.576571
+    Cost after iteration 600: 1.551147
+    Cost after iteration 650: 1.525205
+    Cost after iteration 700: 1.498952
+    Cost after iteration 750: 1.472643
+    Cost after iteration 800: 1.446540
+    Cost after iteration 850: 1.420883
+    Cost after iteration 900: 1.395869
+    Cost after iteration 950: 1.371637
+    Cost after iteration 1000: 1.348272
+    Cost after iteration 1050: 1.325809
+    Cost after iteration 1100: 1.304246
+    Cost after iteration 1150: 1.283554
+    Cost after iteration 1200: 1.263686
+    Cost after iteration 1250: 1.244588
+    Cost after iteration 1300: 1.226203
+    Cost after iteration 1350: 1.208472
+    Cost after iteration 1400: 1.191342
+    Cost after iteration 1450: 1.174762
+    Cost after iteration 1500: 1.158688
+    Cost after iteration 1550: 1.143077
+    Cost after iteration 1600: 1.127893
+    Cost after iteration 1650: 1.113102
+    Cost after iteration 1700: 1.098674
+    Cost after iteration 1750: 1.084583
+    Cost after iteration 1800: 1.070803
+    Cost after iteration 1850: 1.057315
+    Cost after iteration 1900: 1.044097
+    Cost after iteration 1950: 1.031133
+    train accuracy: 58.48101265822785 %
+    test accuracy: 56.81818181818182 %
+    
+
+
+
+
+    201.3639976978302
+
+
 
 ## Summary
 
